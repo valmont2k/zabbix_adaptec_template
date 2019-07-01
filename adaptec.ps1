@@ -46,7 +46,7 @@ $pddata=(($pddata | Select-String -Pattern $pddatapattern) -split '`n')
 $pdinfo=(makeobj($npd)($pddata))
 $pdinfo | ForEach-Object{
 $ID=$_."Reported Channel,Device(T:L)"
-$pdprejson[$ID]=@{
+$pdprejson["$ID"]=@{
 "State"=$_."State"
 "Serial number"=$_."Serial number"
 "Model"=$_."Model"
