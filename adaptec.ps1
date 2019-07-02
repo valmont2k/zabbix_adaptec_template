@@ -1,9 +1,11 @@
-﻿Param (
+Param (
 [switch]$version = $false,
 [ValidateSet("lld","info")][Parameter(Position=0, Mandatory=$True)][string]$action,
 [ValidateSet("pd","ld","ad")][Parameter(Position=1, Mandatory=$True)][string]$part
 )
-$arcconf="C:\zabbix_agent\diskutils\adaptec\arcconf.exe"
+$arcconf="C:\zabbix\diskutils\adaptec\arcconf.exe"
+
+
 function makeobj ($count,$array)
 {
 $obj=for ($i = 0; $i -lt ($array | measure -Line).Lines; $i += $count)
@@ -15,6 +17,8 @@ $obj=for ($i = 0; $i -lt ($array | measure -Line).Lines; $i += $count)
  }
  return $obj
 }
+
+
 function adinfo
 {
 $nad=4
@@ -25,7 +29,7 @@ $addata=(($addata | Select-String -Pattern $addatapattern) -split '`n')
 $adinfo=(makeobj($nad)($addata))
 $adinfo | ForEach-Object{
 $ID="adapter1"
-$adprejson[$ID]=@{
+$adprejson["$ID"]=@{
 "State"=$_."Controller Status"
 "Model"=$_."Controller Model"
 "Battery state"=$_."Status"
@@ -40,7 +44,7 @@ function pdinfo
 $npd=6
 $pdprejson=@{}
 #$pddatapattern='(State.*|Reported Channel.*|Array.*|Model.*|Serial number.*|S.M.A.R.T..*|Last Failure Reason.*|Aborted Commands.*|Bad Target Errors.*|Ecc Recovered Read Errors.*|Failed Read Recovers.*|Failed Write Recovers .*|Format Errors.*|Hardware Errors.*|Hard Read Errors.*|Hard Write Errors.*|Hot Plug Count.*|Media Failures.*|Not Ready Errors.*|Other Time Out Errors.*|Predictive Failures.*|Retry Recovered Read Errors.*|Retry Recovered Write Errors.*)'
-$pddatapattern='(State.*|Reported Channel.*|Array.*|Model.*|Serial number.*|S.M.A.R.T..*)'
+$pddatapattern='(State.*|Reported Channel.*|Array.*|Model.*|Serial number.*|S.M.A.R.T. warnings.*)'
 $pddata=((& $arcconf getconfig 1 pd | select-string -Pattern "Device is a Hard drive" -Context 0,20) -replace ">", "").split("`n")
 $pddata=(($pddata | Select-String -Pattern $pddatapattern) -split '`n')
 $pdinfo=(makeobj($npd)($pddata))
@@ -78,7 +82,7 @@ $lddata=(($lddata | Select-String -Pattern $lddatapattern) -split '`n')
 $ldinfo=(makeobj($nld)($lddata))
 $ldinfo | ForEach-Object{
 $ID=$_."Logical Device name"
-$ldprejson[$ID]=@{
+$ldprejson["$ID"]=@{
 "State"=$_."Status of Logical Device"
 "Raid Level"=$_."RAID level"
 }
